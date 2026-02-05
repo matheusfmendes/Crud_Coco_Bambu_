@@ -1,200 +1,197 @@
-# User CRUD – OAuth2 (Authorization Code + PKCE)
+# User CRUD – OAuth2 + PKCE
 
-Aplicação **full stack** para gerenciamento de usuários, desenvolvida como um **CRUD com autenticação OAuth2**, seguindo boas práticas de segurança, arquitetura e separação de responsabilidades.
+Aplicação full stack para gerenciamento de usuários, desenvolvida como desafio técnico, utilizando **Django REST Framework**, **OAuth2 (Authorization Code + PKCE)**, **PostgreSQL**, **Angular (Standalone)** e **Docker**.
 
-O projeto foi estruturado para facilitar **avaliação técnica**, **execução local** e **deploy via Docker**, sem dependência de ambiente específico.
+O projeto segue boas práticas de **REST**, **segurança**, **containerização** e **organização de código**, com foco em clareza, manutenibilidade e facilidade de execução.
 
 ---
 
-##  Visão Geral
+## 📌 Visão Geral
 
 A aplicação permite:
 
-- Autenticação de usuários via **e-mail e senha**
-- Controle de acesso baseado em perfil
-- Gerenciamento de usuários restrito a administradores
-- Consumo de API REST autenticada via OAuth2
-- Execução completa via Docker
+- Autenticação via **OAuth2 Authorization Code + PKCE**
+- Login de usuários com **email e senha**
+- Controle de permissões:
+  - Usuários comuns: login e visualização dos próprios dados
+  - Superusuários (admin): listar e cadastrar usuários
+- API RESTful protegida por OAuth2
+- Client Web em Angular consumindo a API
+- Ambiente totalmente containerizado com Docker
 
 ---
 
-##  Arquitetura
+## 🧱 Arquitetura
 
-Angular (SPA)
-└── OAuth2 Authorization Code + PKCE
-Django REST API
-└── PostgreSQL
+Frontend (Angular)
+|
+| OAuth2 + PKCE
+v
+API (Django REST)
+|
+v
+PostgreSQL
 
 yaml
 Copiar código
 
-### Componentes
-
-- **Frontend**: Angular (SPA)
+- **Frontend**: Angular (Standalone Components)
 - **Backend**: Django + Django REST Framework
-- **Autenticação**: django-oauth-toolkit (OAuth2)
-- **Banco de dados**: PostgreSQL
-- **Infraestrutura**: Docker + Docker Compose
+- **Auth**: Django OAuth Toolkit
+- **Banco**: PostgreSQL
+- **Infra**: Docker + Docker Compose
 
 ---
 
-##  Autenticação e Segurança
+## 🔐 Autenticação e Segurança
 
-- Protocolo **OAuth2**
-- Fluxo **Authorization Code + PKCE** (recomendado para SPAs)
-- Tokens de acesso com expiração
-- Refresh token automático
-- Revogação de token no logout
-- Senhas armazenadas com **hash seguro (PBKDF2 + salt)** via Django
+A autenticação segue o padrão **OAuth2 Authorization Code com PKCE**, indicado para aplicações SPA.
 
----
+Fluxo resumido:
+1. Usuário informa email e senha
+2. Sessão Django é criada
+3. Início do fluxo OAuth2 (`/o/authorize`)
+4. Troca do código por token (`/o/token`)
+5. API protegida por Bearer Token
+6. Refresh token automático no frontend
 
-##  Controle de Acesso
-
-| Perfil | Permissões |
-|------|-----------|
-| Usuário comum | Login e visualização dos próprios dados |
-| Superusuário | Login, cadastro e listagem de usuários |
-
-O controle é aplicado em **duas camadas**:
-- **Frontend**: guards de rota (auth / admin)
-- **Backend**: permissões no DRF (IsAuthenticated + IsSuperUser)
+✔ Tokens com expiração  
+✔ Refresh token rotativo  
+✔ API stateless  
+✔ Controle de permissões por role  
 
 ---
 
-##  Backend (API)
+## 🔗 Endpoints Principais (REST)
 
-Principais tecnologias e padrões:
+### Autenticação
+- `POST /api/session/login/` – Login com email e senha
+- `POST /o/token/` – OAuth2 Token
+- `POST /o/revoke_token/` – Revogação de token
 
-- Django
-- Django REST Framework
-- django-oauth-toolkit
-- API REST seguindo padrão HTTP
-- Swagger/OpenAPI para documentação
-- Migrations para versionamento de banco
+### Usuário
+- `GET /api/me/` – Dados do usuário logado
+- `GET /api/users/` – Listar usuários (admin)
+- `POST /api/users/` – Criar usuário (admin)
 
-### Endpoints principais
-
-- `POST /api/session/login/`
-- `GET /api/me/`
-- `GET /api/users/` (admin)
-- `POST /api/users/` (admin)
-- `/o/authorize/`
-- `/o/token/`
-- `/o/revoke_token/`
+Todos os endpoints seguem padrão REST:
+- Recursos bem definidos
+- Uso correto de métodos HTTP
+- Retorno de status HTTP apropriados
+- API stateless
 
 ---
 
-## Frontend (SPA)
+## 👥 Controle de Acesso
 
-- Angular (standalone components)
-- Guards de rota:
-  - `authGuard`
-  - `adminGuard`
-  - `loginGuard`
-- Interceptor HTTP para:
-  - Inclusão automática do access token
-  - Refresh automático em caso de expiração
-- UI simples, limpa e funcional
+| Ação                     | Usuário comum | Admin |
+|--------------------------|---------------|-------|
+Login                     | ✅            | ✅    |
+Ver próprios dados        | ✅            | ✅    |
+Listar usuários           | ❌            | ✅    |
+Cadastrar usuários        | ❌            | ✅    |
 
 ---
 
-##  Como Executar o Projeto
+## 🧪 Testes Unitários
 
-### Requisitos
+Foram implementados **5 testes unitários** utilizando `Django TestCase`, cobrindo:
 
-- Docker
-- Docker Compose
+1. Criação de usuário
+2. Login com credenciais válidas
+3. Acesso ao endpoint `/api/me/`
+4. Bloqueio de listagem para não-admin
+5. Permissão de listagem para admin
 
-> Nenhuma dependência adicional (Node, Python ou PostgreSQL) é necessária.
-
----
-
-##  Modo Produção (recomendado para avaliação)
-
-Utiliza **imagens Docker prontas**, permitindo execução imediata.
-
-### 1️ Carregar as imagens
+### Executar testes:
 ```bash
-docker load < api.tar
-docker load < client.tar
+docker compose exec api python manage.py test
+🐳 Docker e Execução
+Pré-requisitos
+Docker
 
-2️ Subir a aplicação
+Docker Compose
+
+Subir o projeto (produção)
 bash
 Copiar código
 docker compose -f docker-compose.prod.yml up
+Serviços disponíveis:
 
-3️ Acessar
 Frontend: http://localhost:4200
 
 API: http://localhost:8000
 
-Swagger: http://localhost:8000/api/docs
+Swagger: http://localhost:8000/api/docs/
 
- Modo Desenvolvimento
-Neste modo:
-
-API e banco rodam em Docker
-
-Frontend roda localmente com hot reload
-
-1️ Subir backend e banco
-bash
-Copiar código
-docker compose -f docker-compose.dev.yml up
-
-2️ Rodar o frontend
-bash
-Copiar código
-cd frontend
-npm install
-npm start
-Frontend: http://localhost:4200
-
-API: http://localhost:8000
-
- Criação de Superusuário
-Para acessar funcionalidades administrativas:
-
+Criar superusuário (admin)
 bash
 Copiar código
 docker compose exec api python manage.py createsuperuser
-Após o login com esse usuário, a rota Lista de Usuários ficará disponível.
+📦 Docker Hub
+As imagens Docker da aplicação estão publicadas no Docker Hub, permitindo execução imediata sem build local.
 
- Testes Manuais Sugeridos
-Usuário comum não acessa rotas administrativas
+O código-fonte completo também está disponível neste repositório.
 
-Superusuário acessa cadastro e listagem
-
-Tentativa de acesso direto a /admin/users sem permissão é bloqueada
-
-Refresh automático do token após expiração
-
-Revogação correta no logout
-
- Decisões Técnicas
-OAuth2 + PKCE adotado por ser o padrão recomendado para SPAs
-
-Separação clara entre frontend e backend
-
-Docker utilizado para padronização de ambiente
-
-Controle de acesso aplicado em múltiplas camadas
-
-Código priorizando clareza, organização e extensibilidade
-
- Estrutura do Projeto
-bash
+📂 Estrutura do Projeto
+arduino
 Copiar código
 backend/
-  config/
-  users/
+ ├── config/
+ ├── users/
+ │   ├── models.py
+ │   ├── views.py
+ │   ├── serializers.py
+ │   ├── permissions.py
+ │   ├── tests/
+ │   │   └── test_api.py
+ └── manage.py
+
 frontend/
-  src/app/
+ ├── src/
+ │   ├── app/
+ │   ├── pages/
+ │   ├── core/
+ │   └── styles.css
+
 docker-compose.dev.yml
 docker-compose.prod.yml
-README.md
+🧠 Decisões e Trade-offs
+OAuth2 + PKCE foi escolhido por ser o padrão recomendado para SPAs
 
-Autor
-Matheus Mendes
-Desenvolvedor Full Stack
+O login inicial com email/senha melhora a experiência do usuário antes do fluxo OAuth
+
+Django REST Framework foi utilizado pela maturidade e clareza
+
+Angular Standalone reduz boilerplate e melhora organização
+
+Docker garante reprodutibilidade e facilidade de avaliação
+
+Não foi utilizado scaffolding automático de API, conforme exigido no desafio
+
+📄 Observações Finais
+Este projeto foi desenvolvido seguindo os critérios do desafio, com foco em:
+
+Segurança
+
+Padrões REST
+
+Clareza de código
+
+Facilidade de execução
+
+Boas práticas de mercado
+
+Fico à disposição para quaisquer esclarecimentos.
+
+Autor: Matheus Mendes
+
+yaml
+Copiar código
+
+---
+
+Se quiser, no próximo passo eu posso:
+- revisar o README como se fosse um **avaliador técnico**
+- reduzir para uma versão **mais curta**
+- adaptar para **repositório público (GitHub Profile)**
