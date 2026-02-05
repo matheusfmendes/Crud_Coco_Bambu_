@@ -185,13 +185,3 @@ Boas práticas de mercado
 Fico à disposição para quaisquer esclarecimentos.
 
 Autor: Matheus Mendes
-
-yaml
-Copiar código
-
----
-
-Se quiser, no próximo passo eu posso:
-- revisar o README como se fosse um **avaliador técnico**
-- reduzir para uma versão **mais curta**
-- adaptar para **repositório público (GitHub Profile)**
