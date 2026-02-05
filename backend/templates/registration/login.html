@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Login</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:#0b1220; color:#e5e7eb; margin:0; display:grid; place-items:center; min-height:100vh;}
+    .card{width:360px; background:#111827; border:1px solid #1f2937; border-radius:14px; padding:18px;}
+    label{display:block; font-size:12px; color:#9ca3af; margin:12px 0 6px;}
+    input{width:100%; padding:10px 12px; border-radius:10px; border:1px solid #374151; background:#0b1220; color:#e5e7eb;}
+    button{margin-top:14px; width:100%; padding:10px 12px; border:0; border-radius:10px; background:#3b82f6; color:white; font-weight:600; cursor:pointer;}
+    .muted{color:#9ca3af; font-size:12px; margin-top:10px}
+    .err{background:#7f1d1d; border:1px solid #ef4444; padding:8px 10px; border-radius:10px; margin-top:10px;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 style="margin:0 0 8px">Login</h2>
+    <p class="muted" style="margin:0 0 14px">
+      Faça login para continuar o fluxo OAuth2 (Authorization Code + PKCE).
+    </p>
+
+    {% if form.errors %}
+      <div class="err">Usuário/senha inválidos.</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}"/>
+
+        <label for="id_username">E-mail</label>
+        <input id="id_username" name="username" type="email" autocomplete="username" required>
+
+        <label for="id_password">Senha</label>
+        <input id="id_password" name="password" type="password" autocomplete="current-password" required>
+
+
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
+</body>
+</html>

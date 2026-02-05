@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+env/
+.env
+*.sqlite3
+
+# Django
+staticfiles/
+media/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db

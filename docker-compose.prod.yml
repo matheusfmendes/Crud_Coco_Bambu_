@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    image: matheusfmendes/user-crud-oauth2-api:1.0
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  client:
+    image: matheusfmendes/user-crud-oauth2-client:1.0
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
